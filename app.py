@@ -5,6 +5,13 @@ from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from models import User
+from werkzeug.utils import secure_filename
+import os
+
+
+# Ensure this directory exists
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 # User identity lookup for JWT
@@ -25,18 +32,28 @@ class Signup(Resource):
         first_name = data.get("first_name")
         last_name = data.get("last_name")
         email = data.get("email")
-        profile_picture = data.get("profile_picture")
         password = data.get("password")
+
+        profile_picture = request.files.get("profile_picture")
 
         user = User.query.filter_by(email=email).first()
 
         if not user:
             try:
+
+                if profile_picture:
+                    filename = secure_filename(profile_picture.filename)
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    profile_picture.save(filepath)
+                else:
+                    filepath = None
+
+
                 user = User(
                     first_name=first_name,
                     last_name=last_name,
                     email=email,
-                    profile_picture=profile_picture
+                    profile_picture=filepath
                 )
                 user.password_hash = password
                 db.session.add(user)
