@@ -28,45 +28,48 @@ def user_lookup_callback(_jwt_header, jwt_data):
 # User registration
 class Signup(Resource):
     def post(self):
-        data = request.get_json()
-        first_name = data.get("first_name")
-        last_name = data.get("last_name")
-        email = data.get("email")
-        password = data.get("password")
+        try:
+            # Get form data
+            first_name = request.form.get("first_name")
+            last_name = request.form.get("last_name")
+            email = request.form.get("email")
+            password = request.form.get("password")
 
-        profile_picture = request.files.get("profile_picture")
+            # Get profile picture file
+            profile_picture = request.files.get("profile_picture")
 
-        user = User.query.filter_by(email=email).first()
+            # Check if email already exists
+            user = User.query.filter_by(email=email).first()
+            if user:
+                return make_response({'error': "Email already registered, kindly log in"}, 401)
+            
+            # Handle profile picture upload
+            if profile_picture:
+                filename = secure_filename(profile_picture.filename)
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                profile_picture.save(filepath)
+            else:
+                filepath = None
 
-        if not user:
-            try:
+            # Create new user and hash the password
+            user = User(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                profile_picture=filepath
+            )
+            user.password_hash =password
+            db.session.add(user)
+            db.session.commit()
 
-                if profile_picture:
-                    filename = secure_filename(profile_picture.filename)
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    profile_picture.save(filepath)
-                else:
-                    filepath = None
+            # Generate access token
+            access_token = create_access_token(identity=user.id)
 
+            # Return response
+            return make_response({"user": user.to_dict(), 'access_token': access_token}, 201)
 
-                user = User(
-                    first_name=first_name,
-                    last_name=last_name,
-                    email=email,
-                    profile_picture=filepath
-                )
-                user.password_hash = password
-                db.session.add(user)
-                db.session.commit()
-
-                # Generate access token for the new user
-                access_token = create_access_token(identity=user.id)
-                return make_response({"user": user.to_dict(), 'access_token': access_token}, 201)
-            except Exception as e:
-                return make_response({"message": str(e)}, 500)
-
-        else:
-            return make_response({'error': "Email already registered, kindly log in"}, 401)    
+        except Exception as e:
+            return make_response({"message": str(e)}, 500)    
 
 api.add_resource(Signup, '/signup')
 
