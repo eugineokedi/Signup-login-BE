@@ -22,7 +22,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 env = os.getenv('FLASK_ENV', 'development')
 
 if env == 'production':
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
 else:
     # Default to SQLite for development and testing
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
