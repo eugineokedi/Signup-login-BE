@@ -11,6 +11,12 @@ import os
 
 # Ensure this directory exists
 UPLOAD_FOLDER = 'static/uploads'
+
+# Check if the folder exists, if not, create it
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+# Configure the Flask app to use this folder for file uploads
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
@@ -58,7 +64,7 @@ class Signup(Resource):
                 email=email,
                 profile_picture=filepath
             )
-            user.password_hash =password
+            user.password_hash = password
             db.session.add(user)
             db.session.commit()
 
