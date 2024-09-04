@@ -75,6 +75,7 @@ class Signup(Resource):
             return make_response({"user": user.to_dict(), 'access_token': access_token}, 201)
 
         except Exception as e:
+            app.logger.error(f"Signup error: {str(e)}")
             return make_response({"message": str(e)}, 500)    
 
 api.add_resource(Signup, '/signup')
