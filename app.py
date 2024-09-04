@@ -82,7 +82,7 @@ class Signup(Resource):
             app.logger.error(f"Signup error: {str(e)}")
             return make_response({"message": str(e)}, 500)    
 
-api.add_resource(Signup, '/signup', Endpoint= '/signup')
+api.add_resource(Signup, '/signup')
 
 # User login
 class UserLogin(Resource):
