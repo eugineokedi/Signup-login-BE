@@ -41,6 +41,10 @@ class Signup(Resource):
             email = request.form.get("email")
             password = request.form.get("password")
 
+             # Check for empty fields
+            if not password:
+                return make_response({'message': "Password is required"}, 400)
+
             # Get profile picture file
             profile_picture = request.files.get("profile_picture")
 
